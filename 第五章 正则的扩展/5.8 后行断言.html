@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        //JavaScript语言的正则表达式只支持先行断言(lookahead)和先行否定断言(negative lookahead),不支持后行断言(lookbehind)和后行否定断言(negative lookbehind)。
+        //目前,有一个提案被提出：引入后行断言，其中V8引擎4.9版本已经支持
+
+        //"先行断言"指的是，x只有在y前面才匹配，必须写成/x(?=y)/的形式。
+        //比如，只匹配百分号之前的数字，要写成/\d+(?=%)/。
+        //"先行否定断言"指的是,x只有不在y前面才匹配，必须写成/x(?!y)/的形式。
+        //比如，只匹配不在百分号之前的数字，要写成/\d+(?!%)/。
+
+        /\d+(?=%)/.exec("100% of US presidents have been male");        //["100"]
+        /\d+(?!%)/.exec("it's all 44 of them");                         //["44"]
+
+        //"后行断言"正好与"先行断言"相反，x只有在y后面才匹配，必须写成/(?<=y)x/的形式.
+        //比如，只匹配美元符号之后的数字，要写成/(?<=\$)\d+/
+        //"后行否定断言"则与"先行否定断言"相反，x只有不在y后面才匹配，必须写成/(?<!y)x/
+        //比如,只匹配不在美元符号后面的数字，要写成/(?<!\$)\d+/
+
+        /(?<=\$)d+/.exec("Benjamin Franklin is on the $100 bill");      //["100"]
+        /(?<!\$)d+/.exec("it's is worth about €90");                    //["90"]
+
+        //"后行断言"括号中的部分(?<=\$)是不计入返回结果的；
+        const RE_DOLLAR_PREFIX=/(?<=\$)foo/g;
+        '$foo %foo foo'.replace(RE_DOLLAR_PREFIX,"bar");
+
+        //"后行断言"的实现需要先匹配/(?<=y)x/中的x，然后再回到左边匹配y的部分。
+        //这种"先右后左"的执行顺序与所有其他正则操作相反，导致了一些不符合预期的结果
+        //首先,"后行断言"的组匹配与正常情况的结果是不一样的
+        /(?<=(\d+)(\d+))$/.exec("1053");     //["","1","053"]
+        /^(\d+)(\d+)$/.exec("1053");         //["1053","105","3"]
+
+        //其次，'后行断言'的反斜杠引用也与通常的顺序相反，必须放在对应的括号之前
+        /(?<=(o)d\1)r/.exec("hodor");       //null
+        /(?<=\1d(o))r/.exec("hodor");       //["r","o"]
+
+        
+    </script>
+</body>
+</html>

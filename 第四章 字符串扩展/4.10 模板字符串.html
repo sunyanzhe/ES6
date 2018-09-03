@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        //模板字符串(template string)是增强版的字符串，用反引号(`)标识。它可以当做普通字符串使用，也可以用来定义多行字符串，或者字符串中嵌入变量。
+        
+        //普通字符串
+        console.log(`In JavaScript '\n' is a line-feed.`);
+
+        //多行字符串
+        console.log(`In JavaScript this is
+not legal`);
+
+        //字符串中嵌入变量
+        var name="Bob",time="today";
+        let str=`Hello ${name}, how are you ${time}`;
+        console.log(str);        
+
+        //以上代码中的字符串都使用了反引号。如果在模板字符串中需要使用反引号，则在其前面要用反斜杠转义
+        var greeting=`\`Yo\` World!`;
+        console.log(greeting);
+
+        //如果使用模板字符串表示多行字符串，所有的空格和缩进都会被保留在输出中。
+        
+        //大括号内可以放入任意的JavaScript表达式，可以进行运算，以及引用对象属性。
+        var x=1,y=2;
+        console.log(`${x}+${y}=${x+y}`);        //"1+2=3"
+        
+        var obj={x:1,y:2};
+        console.log(`${obj.x}+${obj.y*2}=${obj.x+obj.y*2}`);        //"1+4=5"
+
+        //模板字符串中还能调用函数
+        function fn(){
+            return "Hello World"
+        }
+        console.log(`foo ${fn()} bar!`);        //"foo Hello World bar!"
+
+        //如果大括号中的值不是字符串，将按照一般的规则转为字符串。比如，大括号中是一个对象，将默认调用对象的toString方法
+        //如果模板字符串中的变量没有声明，将会报错
+        //由于模板字符串的大括号内部就是要执行的JavaScript代码，因此如果大括号内部是一个字符串，将会原样输出。
+
+        console.log(`Hello ${'world!'}`);       //"Hello world!"
+
+        const tmpl=addrs=>`
+        <table>
+        ${addrs.map(abbr=>`
+            <tr>
+                <td>${abbr.first}</td>
+                <td>${abbr.last}</td>
+            </tr>
+        `).join("")}
+        </table>
+        `;
+        const data=[{first:'<Jane>',last:'Bond'},{first:'Lars',last:'<Corft>'}];
+        console.log(tmpl(data));
+
+
+
+
+        
+    </script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>11.3 Map</title>
+</head>
+<body>
+    <div id="mydiv"></div>
+    <script>
+    //11.3.1 含义和基本用法
+        //JavaScript的对象(Object)本质上是键值对的集合(Hash结构),但是只能用字符串作为键.这给他的使用带来了很大的限制
+        const data={};
+        const element=document.getElementById("mydiv");    
+        data[element]="metadata";
+        console.log(data["[object HTMLDivElement]"]);           //metadata
+
+        //上面的代码原意是将一个DOM节点作为对象data的键,但是由于对象只接受字符串作为键名,所以element被自动转为字符串[object HTMLDivElement].
+
+        //为了解决这个问题,ES6提供了Map数据结构.它类似于对象,也是键值对的集合,但是"键"的范围不限于字符串,各种类型的值(包括对象)都可以作为键.
+        //也就是说,Object结构提供了"字符串————值"对应,Map结构提供了"值————值"的对应,是一种更完善的Hash结构实现.如果需要"键值对"的数据结构,Map比Object更合适
+
+        const m=new Map();
+        const o={p:"hello world"};
+        o.m="container";
+        m.set(o,"content");
+        console.log(m.get(o));          //"content"
+        console.log(m.has(o));          //true
+        console.log(m.delete(o));       //true
+        console.log(m.has(o));          //false
+
+        //上面的代码使用Map结构的set方法,将对象o当做m的一个键,然后又实用get方法读取这个键,接着使用delete方法删除了这个键
+        //上面的例子展示了如何向Map添加成员,作为构造函数,Map也可以接受一个数组作为参数,该数组的成员是一个个表示键值对的数组
+
+        const map=new Map([
+            ["name","张三"],
+            ["title","Author"]
+        ]);
+        console.log(map.size);          //2
+        console.log(map.has('name'));   //true
+        console.log(map.get('name'));   //"张三"
+        console.log(map.has('title'));  //true
+        console.log(map.get('title'));  //"Author"
+
+        //上面的代码在新建Map实例时就制定了两个键————"name"和"title"
+        //Map构造函数接受数组作为参数,实际上执行的是下面的算法
+        const items=[["name","张三"],["title","Author"]];
+        const map1=new Map();
+        items.forEach(([key,value])=>map1.set(key,value));
+        
+        //事实上,不仅仅是数组,任何具有Iterator接口且每个成员都是一个双元素数组的数据结构,都可以当做Map构造函数的参数.
+        //也就是说,Set和Map都可以用来生成新的Map
+        const set=new Set([["foo",1],["bar",2]]);
+        const m1=new Map(set);
+        console.log(m1.get("foo"));     //1
+
+        const m2=new Map([["baz",3]]);
+        const m3=new Map(m2);
+        console.log(m3.get("baz"));     //3
+
+        //上面的代码中,我们分别使用Set对象和Map对象当做Map构造函数的参数,都生成了新的Map对象
+        //如果对同一个键,多次赋值,后面的值将覆盖前面的值
+        const map3=new Map();
+        map3.set(1,"aaa").set(1,"bbb");
+        console.log(map3.get(1));           //"bbb"
+
+        //上面的代码对键1进行了连续赋值,结果后一次的值覆盖了前一次的值
+        //如果读取了一个未知的键,则返回undefined
+        console.log(new Map().get("asdasd"));           //undefined
+
+        /****
+        *注意:只有对同一个对象的引用,Map结构才将其视为同一个键,这一点要非常小心
+        ****/
+
+        const map4=new Map();
+        map4.set(['a'],555);
+        console.log(map4.get(['a']));           //undefined
+
+        //上面的set和get方法表面上是针对同一个键,实际上却是两个值,内存地址是不一样的,因此get方法无法读取该键,返回undefined.
+        //同理,同样的值的两个实例在Map结构中被视为两个键.
+
+        const map5=new Map();
+        const k1=['a'];
+        const k2=['a'];
+        
+        map5.set(k1,111).set(k2,222);
+        console.log(map5.get(k1));      //111
+        console.log(map5.get(k2));      //222
+
+        //上面的代码中,变量k1和k2的值是一样的,但它们在Map结构中被视为两个键.
+        //由上可知,Map的键实际上是和内存地址绑定的,只要内存地址不一样,就视为两个键,这就解决了同名属性碰撞(clash)的问题,我们扩展别人的库时,如果使用对象作为键名,不用担心自己的属性与原作者的属性同名
+        //如果Map的键是一个简单类型的值(数字、字符串、布尔值),则只要两个值严格相等,Map就将其视为一个键,包括0和-0,虽然NaN不严格等于自身,但Map将其视为同一个键
+        let map6=new Map();
+        map6.set(-0,123);
+        console.log(map6.get(+0));       //123
+       
+        map6.set(true,1);
+        map6.set("true",2);
+        console.log(map6.get(true));    //1
+
+        map6.set(undefined,3);
+        map6.set(null,4);
+        console.log(map6.get(undefined));//3
+
+        map6.set(NaN,123);
+        console.log(map6.get(NaN));      //123
+    
+    //11.3.2 实例的属性和操作方法
+        //Map结构的实例有以下几个属性和操作方法
+        //Size属性
+            //size属性返回Map结构的成员总数
+            console.log(map6.size);     //6
+        
+        
+        //set(key,value)
+            //set方法设置key所对应的键值,然后返回整个Map结构.如果key已经有值,则键值会被更新,否则就新生成该键.
+            //set方法返回的是当前的Map对象,因此可以采用链式写法
+            //let m=new Map().set('a',1).set('b',2).set('c',3);
+        
+        
+        //get(key)
+            //get方法读取key对应的键值,如果找不到key,则返回undefined
+            console.log(map6.get(0));
+
+        //has(key)
+            //has方法返回一个布尔值,表示某个键是否在Map数据结构中
+            console.log(map6.has(NaN));
+        
+        //delete(key)
+            //delete方法删除某个键,返回true.如果删除失败,返回false
+        
+        //clear()
+            //clear方法清除所有成员,没有返回值
+
+    
+    //11.3.3 遍历方法
+        //Map原生提供了3个遍历器生成函数和一个遍历方法
+            //1.keys():返回键名的遍历器
+            //2.values():返回键值的遍历器
+            //3.entries():返回所有成员的遍历器
+            //4.forEach():遍历Map的所有成员
+        
+        //需要特别注意的是,Map的遍历顺序就是插入顺序
+        const map7=new Map([['F','no'],['T','yes']]);
+        for(let key of map7.keys()){console.log(key)};       //F T
+        for(let value of map7.values()){console.log(value)}; //no yes
+        for(let item of map7.entries()){console.log(item[0],item[1])};   //"F" "no", "T" "yes"
+
+        //或者
+        for(let [key,value] of map7){console.log(key,value)};           //"F" "no", "T" "yes"
+        
+        //上面代码中最后的例子表示,Map结构的默认遍历器接口(Symbol.iterator属性)就是entries方法
+        console.log(map7[Symbol.iterator]===map7.entries);      //true
+
+        //Map结构转为数组结构的比较快速的方法时结合拓展运算符(...)
+        const map8=new Map([[1,"one"],[2,"two"],[3,"three"]]);
+        console.log(map8.keys());
+
+    //11.3.4与其他数据结构的相互转换
+        //Map转为数组
+        //[...myMap]
+
+        //Map转对象
+        function strMaptoObj(strMap){
+            let obj=Object.create(null);
+            for(let [k,v] of strMap){
+                obj[k]=v
+            }
+            return obj;
+        }
+
+        
+    </script>
+</body>
+</html>

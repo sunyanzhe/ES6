@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        //ES2017引入了字符串补全长度的功能。如果某个字符串不够指定长度，会在头部或尾部补全。padStart()用于头部补全,padEnd()用于尾部补全
+        console.log("x".padStart(5,"ab"));        //"ababx"
+        console.log("x".padEnd(4,"ab"));          //"xaba"
+
+        //上面的代码中，padStart和padEnd分别接受两个参数，第一个参数用来指定字符串的最小长度，第二个参数则是用来补全的字符串
+        //如果源字符串的长度大于或等于指定的最小长度，则返回原字符串
+        console.log("xxx".padStart(2,"ab"));     //"xxx"
+
+        //如果用来不全的字符串与原字符串的长度之和超过了指定的最小长度，则会截取超出位数的补全字符串
+        console.log("1".padStart(10,"0123456789")); //"0123456abc";
+
+        //如果省略第二个参数，则会用空格来补全
+        console.log("x".padStart(4));             //"   x"
+        
+    </script>
+</body>
+</html>

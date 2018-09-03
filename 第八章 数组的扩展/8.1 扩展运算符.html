@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>扩展运算符</title>
+</head>
+<body>
+    <div></div>
+    <div></div>
+    <div></div>
+    <script>
+        //8.1.1含义
+        //扩展运算符(spread)是三个点(...)，它如同rest参数的逆运算，将一个数组转为用逗号分隔的参数序列
+        console.log(...[1,2,3]);
+        console.log(1,...[2,3,4],5);
+        console.log([...document.querySelectorAll("div")]);         //[div,div,div]
+        
+        //该运算符主要用于函数调用
+        function push(array,...items){
+            array.push(...items);
+        }
+        
+        function add(x,y){
+            return x+y;
+        }
+        var numbers=[4,38];
+        console.log(add(...numbers));        //42
+
+        //8.1.2替代数组的apply方法
+
+        //ES5的写法
+        function f(x,y,z){
+            return [x,y,z];
+        }
+        var arg=[1,2,3];
+        f.apply(null,arg);
+
+        //ES6的写法
+        function f(x,y,z){
+            return [x,y,z]
+        }
+        var arg=[1,2,3];
+        f(...arg);
+
+        //下面是扩展运算符取代apply方法的一个实际例子：应用Math.max方法简化求出一个数组中的最大元素
+        //ES5的写法
+        Math.max.apply(null,[1,2,3]);
+
+        //ES6的写法
+        Math.max(...[14,3,77]);
+
+        //等同于
+        Math.max(14,3,77);
+
+        //上面的代码中，由于JavaScript不提供数组最大元素的函数，所以只能套用Math.max函数将数组转为一个参数序列，然后求最大值。
+        //有了拓展运算符以后就可以直接使用Math.max了
+        //另一个例子是通过push函数讲一个数组添加到另一个数组的尾部
+
+        var arr1=[0,1,2];
+        var arr2=[3,4,5];
+        arr1.push(...arr2);
+        console.log(arr1);
+    </script>
+</body>
+</html>

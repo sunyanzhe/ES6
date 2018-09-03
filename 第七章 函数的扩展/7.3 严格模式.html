@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        //从ES5开始，函数内部可以设定为严格模式
+        function doSomething(a,b){
+            'use strict';
+            //code
+        }
+        //ES2016做了一点改变，规定只要函数参数使用了默认值、解构赋值或者扩展运算符，那么函数内部就不能显示设定为严格模式，否则就会报错
+        //这样规定的原因是，函数内部的严格模式同时适用于函数体和函数参数
+        //但是，函数执行时，限制性函数参数，然后再执行函数体
+        //这样就有一个不合理的地方：只有从函数体之中才能知道参数是否应该以严格模式执行，但是参数却应该先于函数体执行。
+    </script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>私有方法</title>
+</head>
+<body>
+    <script>
+        
+        //私有方法是常见需求,但ES6不提供,只能通过变通方法来模拟实现
+        //一种做法是命名上加以区别
+        class Widget{
+            //公有方法
+            foo(baz){
+                this._bar(baz);
+            }
+            //私有方法
+            _bar(baz){
+                return this.snaf=baz;
+            }
+        }
+        //另一种方法是索性将私有方法移除模块,因为模块内部的所有方法都是对外可见的
+        class Widget1{
+            foo(baz){
+                bar.call(this,baz);
+            }
+        }
+        function bar(baz){
+            return this.snaf=baz;
+        }
+        
+        //上面的代码中,foo是公有方法,内部调用了bar.call(this,baz).这使得bar实际上成为了当前模块的私有方法.
+        //还有一种方法是利用Symbol值
+        const bar=Symbol('foo');
+        const snaf=Symbol("snaf");
+
+        class MyClass{
+            foo(baz){
+                this[bar](baz);
+            }
+            [baz](baz){
+                return this[snaf]=baz;
+            }
+        }
+
+        //上面的代码中,bar和snaf都是Symbol值,导致第三方无法获取到它们,因此达到了私有方法和私有属性的效果
+    </script>
+</body>
+</html>

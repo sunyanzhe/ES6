@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>内置的Symbol值</title>
+</head>
+<body>
+    <script>
+    //除了定义自己使用的Symbol值,ES6还提供了11个内置的Symbol值,指向语言内部使用的方法
+    //10.7.1 Symbol.hasInstance
+
+        //对象的Symbol.hasInstance属性指向一个内部方法,对象使用instanceof运算符会调用这个方法,判断该对象是否为某个构造函数的实例.
+        //比如,foo instanceof Foo,在语言内部实际上调用的是Foo[Symbol.hasInstance](foo).
+        class MyClass{
+            [Symbol.hasInstance](foo){
+                return foo instanceof Array
+            }
+        }
+        console.log([1,2,3] instanceof new MyClass());            //true
+
+        //上面的代码中,MyClass是一个类,new MyClass()会返回一个实例.
+        //该实例的Symbol.hasInstance方法会在进行instanceof运算时自动调用,判断左侧的运算子是否为Array的实例
+
+        //下面一个例子
+        class Even{
+            static [Symbol.hasInstance](obj){
+                return +obj%2===0
+            }
+        }
+
+        console.log(1 instanceof Even);         //false
+        console.log(2 instanceof Even);         //true
+        console.log(12312 instanceof Even);     //true
+
+
+    //10.7.2 Symbol.isConcatSpreadable
+
+        //对象的Symbol.isConcatSpreadable属性等于一个布尔值,表示该对象使用Array.prototype.concat()时是否可以展开
+
+        let arr1=['c','d'];
+        ['a','b'].concat(arr1,'e');     //['a','b','c','d','e']
+        console.log(arr1[Symbol.isConcatSpreadable]);           //undefined
+
+        let arr2=['c','d'];
+        arr2[Symbol.isConcatSpreadable]=false;
+        console.log(['a','b'].concat(arr2,"e"));            //['a','b',['c','d'],'e'];
+
+        //上面的代码说明,数组的默认行为是可以展开的.Symbol.isConcatSpreadable属性等于true或undefined,都有这个效果
+        //类数组对象也可以展开,但它的Symbol.isConcatSpreadable属性默认行为
+
+        //类似数组的对象也可以展开,但它的Symbol.isConcatSpreadable属性默认为false,必须手动打开
+        let obj={length:2,0:"c",1:"d"};
+        console.log(['a','b'].concat(obj,'e'));             //['a','b',obj,'e'];
+
+        obj[Symbol.isConcatSpreadable]=true;
+        console.log(['a','b'].concat(obj,'e'));             //['a','b','c','d','e'];
+
+        
+        //对于一个类而言,Symbol.isConcatSpreadable属性必须1写成实例的属性
+        class A1 extends Array{
+            constructor(arg){
+                super(arg);
+                this[Symbol.isConcatSpreadable]=true;
+            }
+        }
+        class A2 extends Array{
+            constructor(arg){
+                super(arg);
+                this[Symbol.isConcatSpreadable]=false;
+            }
+        }
+        let a1=new A1();
+        a1[0]=3;
+        a1[1]=4;
+
+        let a2=new A2();
+        a2[0]=5;
+        a2[1]=6;
+        console.log([1,2].concat(a1).concat(a2));            //[1,2,3,4,[5,6]];
+
+        //上面的代码中,类A1是可扩展的,类A2是不可扩展的,所以使用concat是有不一样的结果
+
+    //10.7.3 Symbol.species
+        //对象的Symbol.species属性指向了当前对象的构造函数.创造实例时默认会调用这儿方法,即使用这个属性返回的函数当做构造函数来创造新的实例对象.
+
+        class Myarray extends Array{
+            //覆盖父类Array的构造函数
+            static get [Symbol.species](){return Array;}
+        }
+
+        //上面的代码中,子类Myarray继承了父类Array,创建Myarray的实例对象时,本来会调用他自己的构造函数(本例中被省略了),但是由于定义了Symbol.species属性,所以会使用这个属性返回的函数来创建Myarray的实例
+        //这个例子也说明,定义Symbol.species属性要采用get读取器.磨人的Symbol.species属性等同于下面的写法
+        //static get [Symbol.species](){}
+        
+        //下面是一个例子
+        class MyArray extends Array{
+            static get [Symbol.species](){
+                return Array;
+            }
+        }
+        var a=new MyArray(1,2,3);
+        var mapped=a.map(x=>x*x);
+
+        console.log(a instanceof MyArray);      //true
+        console.log(a instanceof Array);        //true
+        console.log(mapped instanceof MyArray); //true
+        console.log(mapped instanceof Array);   //true
+
+        //上面的代码中,由于构造函数被替换成了Array,所以,mapped对象不是MyArray的实例
+
+    //10.7.4 Symbol.match
+        //对象的Symbol.match属性指向一个函数,当执行str.match(myObject)是,㘝该属性存在,会调用他返回该方法的返回值
+        //String.prototype.match(regexp);
+
+        //等同于
+        //regexp[Symbol.match](this);
+
+        class Mymatcher{
+            static [Symbol.match](string){
+                return 'hello world'.indexOf(string)
+            }
+        }
+        console.log("e".match(Mymatcher));          //1
+
+    //10.7.5 Symbol.replace
+        //对象的Symbol.replace属性指向一个方法,当对象呗String.prototype.replace方法调用时会返回该方法的返回值
+        //String.prototype.replace(searchValue,replaceValue);
+
+        //等同于
+        //searchValue[Symbol.replace](this,replacValue);
+        
+        //下面是一个例子
+        const x={};
+        x[Symbol.replace]=(...s)=>console.log(s);
+        "hello".replace(x,"World");     //["hello","World"];
+
+    //10.7.6 Symbol.search
+        //对象的Symbol.search属性指向一个方法,当对象被String.prototype.search方法调用时会返回该方法的返回值
+        //String.prototype.search(regexp)
+        //等同于
+
+        //regexp[Symbol.search](this)
+
+        class Mysearch{
+            constructor(value){
+                this.value=value
+            }
+            [Symbol.search](string){
+                return string.indexOf(this.value);
+            }
+        }
+        console.log("foobar".search(new Mysearch("foo")));           //"0";
+
+    //10.7.7 Symbol.split
+        //对象的Symbol.split属性指向一个方法,当对象被String.prototype.split方法调用时会返回该方法的返回值
+        //String.prototpye.split(separator,limit);
+        //等同于
+
+        //separator[Symbol.split](this,limit);
+
+        //下面是一个例子
+
+        var m={
+            [Symbol.split](string){
+                var index=string.indexOf("foo");
+                if(index==-1) return string;
+                return[string.substr(0,index),string.substr(index+"foo".length)];
+            }
+        };
+
+        console.log("i'mfoolish".split(m));         //["i'm",'lish'];
+
+        //上面的代码使用Symbol.split方法,重新定义了字符串对象的split方法的行为
+
+    //10.7.8 Symbol.iterator
+        //对象的Symbol.iterator属性指向该对象的默认遍历器方法
+        var myIterable={};
+        myIterable[Symbol.iterator]=function*(){
+            yield 1;
+            yield 2;
+            yield 3;
+        }
+        console.log([...myIterable])            //[1,2,3]
+
+        //对象进行for...of循环时,会调用Symbol.iterator方法返回该对象的默认遍历器,详细介绍参见地15章
+        class Collection{
+            *[Symbol.iterator](){
+                let i=0;
+                while(this[i]!==undefined){
+                    yield this[i];
+                    ++i;
+                }
+            }
+        }
+
+        let myCollection=new Collection();
+        myCollection[0]=1;
+        myCollection[1]=2;
+        for(let value of myCollection){
+            console.log(value);
+        }
+        //1
+        //2
+
+    //10.7.9 Symbol.toPrimitive
+        //对象的Symbol.toPrimitive属性指向一个方法,对象被转为原始类型的值是会调用这个方法,返回该对象对应的原始类型值
+        //Symbol.toPrimitive被调用时会接受一个字符串参数,表示当前运算的模式.一共有三种模式
+        //1.Number:该场合需要转成数值
+        //2.String:该场合需要转为字符串
+        //3.Defalut:该场合可以转为数值,也可以是字符串
+        let object={
+            [Symbol.toPrimitive](hint){
+                switch(hint){
+                    case 'number':
+                        return 123;
+                    case 'string':
+                        return 'str';
+                    case 'default':
+                        return 'default';
+                    default:
+                        throw new Error();
+                }
+            }
+        };
+        console.log(2*object);             //246;
+        console.log(3+object);             //3default
+        console.log(object=='default');    //true
+        console.log(String(object));       //'str'
+        
+    //10.7.10 Symbol.toStringTag
+        //对象的Symbol.toStringTag属性指向一个方法,在对象上调用Object.prototype.toString方法时,如果这个属性存在,其返回值会出现在toString方法反悔的字符串中,表示对象的类型.
+        //也就是说,这个属性可用于制定[object Object]或[object Array]中object后面的字符串
+        
+        //例1
+        console.log({[Symbol.toStringTag]:"foo"}.toString())        //"[object foo]"
+
+        //例2
+        class Collection1{
+            get [Symbol.toStringTag](){
+                return "xxx";
+            }
+        }
+
+        var x1=new Collection1();
+        console.log(Object.prototype.toString.call(x1));      //"[object xxx]";
+
+    //10.7.11   Symbol.unscopables
+        //对象的Symbol.unscopables属性指向一个对象,指定了使用with关键字时哪些属性会被with环境排除
+        //Array.prototype[Symbol.unscopables]
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

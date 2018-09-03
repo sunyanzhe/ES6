@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>9.11 Object.getOwnPropertyDescriptors()</title>
+</head>
+<body>
+    <script>
+        //ES5的Object.getOwnPropertyDescriptor方法用来返回某个对象的描述对象
+        var obj={p:'a'};
+
+        console.log(Object.getOwnPropertyDescriptor(obj,"p"));
+        // Object  {
+        //     value:"a",
+        //     writable:true,
+        //     enumerable:true,
+        //     configurable:true
+        // }
+
+        //ES2017引入了Object.getOwnPropertyDescriptors方法,返回指定对象所有自身属性(非继承属性)的描述对象
+        const obj1={
+            foo:123,
+            get bar(){return "abc"}
+        }
+        console.log(Object.getOwnPropertyDescriptors(obj1));
+        // {
+        //     bar:{get:f bar, set: undefined, enumerable: true, configurable: true},
+        //     foo:{value: 123, writable: true, enumerable: true, configurable: true}
+        // }
+
+        //上面的代码中,Object.getOwnPropertyDescriptors方法返回一个对象,所有源对象的属性名都是该对象的属性名,对应的属性值就是该属性的描述对象
+        //该方法的实现非常容易
+        function getOwnPropertyDescriptors(obj){
+            var result={};
+            for (let key of Reflect.ownKeys(obj)){
+                result[key]=Object.getOwnPropertyDescriptor(obj,key);
+            }
+            return result;
+        }
+
+        //该方法的引入主要是为了解决Object.assign()无法正确复制get属性和set属性的问题
+        const source={
+            set foo(value){
+                console.log(value);
+            }
+        };
+
+        const target1={};
+        Object.assign(target1,source);
+        console.log(Object.getOwnPropertyDescriptor(target1,"foo"));
+        // {
+        //     configurable: true,
+        //     enumerable: true,
+        //     value: undefined,
+        //     writable:true
+        // }
+
+        //上面的代码中,source对象的foo属性值是一个复制函数,Object.assign方法将这个属性赋值给了target1对象,结果该属性的值变成了undefined.
+        //这是因为Object.assign方法总是复制一个属性的值,而不会复制它背后的复制方法或者取值方法.
+
+        //Object.getOwnPropertyDescriptors方法配合Object.defineProperties方法就可以实现正确复制.
+        const target2={};
+        Object.defineProperties(target2,Object.getOwnPropertyDescriptors(source));
+        console.log(Object.getOwnPropertyDescriptor(target2,"foo"));
+        //{
+        //   get:undefined,
+        //   set:[Function foo],
+        //   enumerable:true,
+        //   configurable:true
+        //}
+
+        //上面的代码中,将这两个对象合并的逻辑提炼出来便会得到以下代码
+        const shallowMerge=(target,source)=>Object.defineProperties(target,Object.getOwnPropertyDescriptors(source));
+        
+        //Object.getOwnPropertyDescriptors方法的另一个用处是,配合Object.create方法将对象属性克隆到另一个新对象,这属于浅复制
+        const clone=Object.create(Object.getPrototypeOf(obj),Object.getOwnPropertyDescriptors(obj));
+        
+        //或者
+        const shallowClone=(obj)=>Object.create(Object.getPrototypeOf(obj),Object.getOwnPropertyDescriptors(obj));
+
+        //上面的代码会克隆对象obj
+        //另外,Object.getOwnPropertyDescriptors方法可以实现一个对象继承另一个对象.
+        //以前,继承另一个对象常常写成下面这样
+        let prot={};
+        const objm={
+            __proto__:prot,
+            foo:123
+        };
+
+        //ES6规定__proto__只需部署浏览器,无需部署其他环境.如果去除__proto__,上面的代码就要改成下面这样
+        const obj2=Object.create(prot);
+        obj2.foo=123;
+
+        //或者
+        const obj3=Object.assign(Object.create(prot),{foo:123});
+        
+        //Object.getOwnPropertyDescriptors也可以实现Mixin(混入)模式
+        let mix=(obj)=>({
+            with:(...mixins)=>mixins.reduce(
+                (c,mixin)=>Object.create(
+                    c,Object.getOwnPropertyDescriptors(mixin)
+            ),obj)
+        })  
+
+        //multiple mixins example
+        let a={a:"a"};
+        let b={b:"b"};
+        let c={c:"c"};
+        let d=mix(c).with(a,b);
+        console.log(d.c,d.b,d.a);           //"c" "b" "a"
+
+        //上面的代码返回一个新的对象d,代表了对象a和b被混入了对象c的操作
+        //出于完整性考虑,Object.getOwnPropertyDescriptors进入标准以后还会有Reflect.getOwnPropertyDescriptors方法
+        
+    </script>
+</body>
+</html>

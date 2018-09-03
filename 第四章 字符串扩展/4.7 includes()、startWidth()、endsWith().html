@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        //传统上，JavaScript中只有indexOf()方法可用来确定一个字符串是否包含在另一个字符串中。ES6又提供了3种新方法。
+        //1.includes()：返回布尔值，表示是否找到了参数字符串
+        //2.startsWith()：返回布尔值，表示参数字符串是否在源字符串的头部
+        //3.endsWith()：返回布尔值，表示参数字符串是否在源字符串的尾部
+
+        var s="Hello world!";
+        console.log(s.includes("He"));       //true
+        console.log(s.endsWith("!"));        //true
+        console.log(s.startsWith("Hello"));  //true
+
+        //这3个方法都支持第二个参数，表示开始搜索的位置
+
+        console.log(s.endsWith("Hello",5));  //true
+        //上面的代码表示，使用第二个参数n时，endsWith的行为与其他两个方法有所不同。它针对前n个字符，而其他两个方法针对从第n个位置到字符串结束位置之间的字符。
+
+        
+
+    </script>
+</body>
+</html>

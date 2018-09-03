@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>19.8 私有属性</title>
+</head>
+<body>
+    <script>
+        
+    //与私有方法一样,ES6不支持私有属性.
+    //目前,有一个提案为class加了私有属性,方法是在属性名之前,使用#来表示
+    // class Point{
+    //     #x;
+    //     constructor(x=0){
+    //         #x=+x;  //写成this.#x亦可
+    //     }
+    //     get x(){return #x}
+    //     set x(value){#x=+value}
+    // }
+
+    //上面的代码中,#x就表示私有属性x,在Point类之外是读取不到这个属性的,还可以看到,私有属性与实力属性是可以同名的
+
+    //私有属性可以指定初始值在构造函数执行时进行初始化
+    // class Point{
+    //     #x=0
+    //     constructor(){
+    //         #x;         //0
+    //     }
+    // }
+    //之所以要引入一个新的前缀#来表示私有属性,而没有采用private关键字,是因为JavaScript是一门动态语言,使用独立的符号似乎是唯一可靠地方法,能够准确地区分一种属性是否为私有属性.
+    //另外,Ruby语言使用@表示私有属性,ES6没有用这个符号而使用#,是因为@已经被留给了Decorator
+    //该提案之规定了私有属性的写法,但是很自然地,他也可以用来编写私有方法
+
+    
+    </script>
+</body>
+</html>

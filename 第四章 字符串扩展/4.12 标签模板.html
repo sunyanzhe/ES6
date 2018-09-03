@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        //模板字符串的功能不仅仅是上面这些。它可以紧跟在一个函数名后面，该函数将被调用来处理这个模板字符串。这被称为'标签模板'功能(tagged template)。
+        alert`123`;         //等同于alert(123);
+
+        //但是，如果模板字符中变量，就不再是简单的调用了，而是要将模板字符串先处理成多个参数，在调用函数.
+        //var a=5;
+        //var b=10;
+        //tag`Hello ${a+b} world ${a*b}`;
+        //等同于
+        //tag(['Hello','world',''],15,50);
+        
+        //上面的代码中，模板字符串前面有一个标识名tag，他是一个函数。整个表达式的返回值就是tag函数处理模板字符串后的返回值。
+        var total=30;
+        var msg=passthru`The total is ${total} (${total*1.05} with tax)`;
+        function passthru(literals){
+            var result="";
+            var i=0;
+            while(i<literals.length){
+                result+=literals[i++];
+                if(i<literals.length){
+                    result+=arguments[i];
+                }
+            }
+            return result;
+        }
+        console.log(msg);
+
+        //采用rest参数鞋写法如下
+        function passthrus(literals,...values){
+            var result="";
+            for(var i=0;i<literals.length;i++){
+                result+=literals[i]+values[i];
+            }
+            result+=literals[i];
+            return result;
+        }
+
+        //"标签模板"的一个重要应用就是过滤HTML字符串，防止用户输入恶意内容
+
+        function SaferHTML(templateData){
+            var s=templateData[0];
+            for(var i=1;i<arguments.lenght;i++){
+                var arg=String(arguments[i]);
+                s+=arg.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+                s+=templateData[i];
+            }
+            return s;
+        }
+        var sender='<script>alert("abc")<\/script>';        
+        var message=SaferHTML`<p>${sender} has sent you a message.</p>`;
+        console.log(message);
+    </script>
+</body>
+</html>

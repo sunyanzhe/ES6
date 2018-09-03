@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        //正则表达式中，点(.)是一个特殊字符，代表任意的单个字符串，但是行终止符除外
+        /foo.bar/.test('foo\nbar');             //false
+        
+        //上面的代码.因为不匹配\n，所以正则表达式返回false
+
+        /foo[\s\S]bar/.test("foo\nbar");        //true
+
+        //引入/s修饰符，使得.可以匹配任意单个字符
+
+        /foo.bar/s.test("foo\nbar");            //true
+
+    </script>
+</body>
+</html>

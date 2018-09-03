@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        //7.7.3 尾递归          p126
+            //函数调用自身称为递归。如果尾调用自身就称为尾递归
+            //递归非常消耗内存，因为需要同时保存成百上千个调用帧，很容易发生“栈溢出”错误(stack overflow).
+            //但对于尾递归来说，由于只存在一个调用帧，所以永远不会发生"栈溢出"错误
+            function factorial(n){
+                if(n==1) return 1;
+                return n*factorial(n-1);
+            }
+            
+            //上面的代码是一个阶乘函数，计算n的阶乘，最多需要保存n个调用记录，复杂度为O(n)。
+            //如果改写成尾递归，只保留一个调用记录，则复杂度为O(1)。
+            // function factorial1(n,total){
+            //     if(n===1) return total;
+            //     return factorial(n-1,n*total);
+            // }
+            
+            console.log(factorial(5,1))         //120
+
+            //还有一个比较著名的例子————计算Fibonacci数列，也能充分说明尾递归优化的重要性
+            //非尾递归的Fibonacci数列
+            function fibonacci(n){
+                if(n<=1)    n=1;
+                return fibonacci(n-1)+fibonacci(n-2)
+            }
+
+            //fibonacci(100)        堆栈溢出
+
+            function Fibonacci(n,ac1=1,ac2=1){
+                if(n<=1) {return ac2};
+                return Fibonacci(n-1,ac2,ac2+ac1)
+            }
+            
+            console.log(Fibonacci(100));
+
+            //柯里化
+            function currying(fn,m){
+                return function(n){
+                    return fn.call(this,n,m)
+                }
+            }
+            
+            function sum(x,y){
+                if(y>0){
+                    return sum(x+1,y-1)
+                }else{
+                    return x
+                }
+            }
+            //蹦床函数
+            function trampoline(f){
+                while(f&&f instanceof Function){
+                    f=f();
+                }
+                return f;
+            }
+            //以上代码就是蹦床函数的一个实现，它接受函数f作为参数。只要f执行后返回一个函数就继续执行；
+            //这里是返回一个函数然后执行该函数，而不是在函数里面调用函数，这样就避免了执行，从而消除了调用栈过大的问题
+            //然后要做的是将原来的递归函数改写为每一步返回另一个函数。
+            function sum2(x,y){
+                if(y>0){
+                    return sum2.bind(null,x+1,y-1)
+                }else{
+                    return x;
+                }
+            }
+
+            //上面的代码中，sum函数的每次执行都会返回自身的另一个版本，
+            //现在使用蹦床函数执行sum就不会产生调用溢出
+            var m=trampoline(sum2(1,10000));
+            console.log(m)              //10001
+
+            //蹦床函数并不是真正的尾递归优化，下面的实现才是
+            function tco(f){
+                var value;
+                var active=false;
+                var accumulated=[];
+                return function accumulator(){
+                    accumulated.push(arguments);
+                    if(!active){
+                        active=true;
+                        while(accumulated.length){
+                            value=f.apply(this,accumulated.shift());
+                        }
+                        active=false;
+                        return value;
+                    }
+                };
+            }
+
+            var sum2=tco(function(x,y){
+                if(y>0){
+                    return sum2(x+1,y-1)
+                }else{
+                    return x;
+                }
+            });
+            console.log(sum2(1,1000000));
+
+            //1.首先以函数表达式的形式将tco函数的返回值赋给sum,tco函数的返回值是accumulator函数,也就是说当执行sum(1,10)的时候即是在执行accumulator(1,10);
+            //2.accumulator是个闭包，这意味着可以访问在tco中定义的value，active和accumulated
+            //3.前面已经讲了，当我们执行sum的时候相当于accumulator，于是accumlator将实参传入accumlated数组，比如执行sum(1,10)那么这里传入的就是类数组对象[1,10]，accumulated现在就是一个length为1的二维数组
+            //4.进入二维数组，这里是关键：value=f.apply(this,accumulated.shift())；  这条语句中，f表示外包的匿名函数，它判断y的值后返回一个sum。（这里很容易产生混乱，如果我们忽略while循环中的细节，很容易将其误认为也是递归）
+            //5.匿名函数f判断y的值返回一个sum，sum的参数被改变了，前面提到执行sum相当于执行accumulator，于是新的参数被加入到了accumulator但因为这是active是true(因为执行流还在while中)，所以执行这个被返回的sum就会得到一个undefined值，value被赋值为undefined。
+            //6.可是因为执行了被返回的sum(也就是执行了accumulator)尽管没有进入if(!active),但是执行了第一条语句，所以accumulated被重新push进了外包的匿名函数中被修改的实参，所以while循环继续(这里很重要)
+            //7.while循环一直执行到accumulated中的值为空，在value=f.apply(this,accumulated.shift());每次return一个sum后accumulated都会被重新推入一个实参(accumulated的length始终为1)，直到匿名的外包函数return出x，于是x的值被赋值给value被返回出来
+
+            
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </script>
+</body>
+</html>

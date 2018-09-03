@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        function tokenzie(pattern,str){
+            let result=[];
+            let match;
+            while(match=pattern.exec(str)){
+                result.push(match[1]);
+            }
+            return result;
+        }
+
+        const TOKEN_Y=/\s*(\+|\d+)\s*/y;
+        const TOKEN_Y=/\s*(\+|\d+)\s*/g;
+        tokenzie(TOKEN_Y,"3 + 4");              //['3','+','4']
+        tokenzie(TOKEN_G,"3 + 4");              //['3','+','4']
+
+                
+    </script>
+</body>
+</html>

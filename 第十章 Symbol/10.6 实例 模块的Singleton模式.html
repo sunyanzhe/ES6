@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>10.6 实例:模块的Singleton模式</title>
+</head>
+<body>
+    <script>
+        //模块的Singleton模式指的是,调用一个类并且在任何时候都返回同一个实例.
+        //对于Node来说,模块文件可以看成是一个类.怎么保证每次执行这个模块文件返回的都是同一个实例呢?
+        //很容易想到,可以吧实例放到顶层对象Global中
+        //mod.js
+        // function A(){
+        //     this.foo="hello";
+        // }
+        // if(!global._foo){
+        //     global._foo=new A();
+        // }
+        // module.exports=global._foo;
+        //然后,加载上面的mod.js
+        var a=require("./mod.js");
+        console.log(a.foo);
+    </script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>19.4类的实例对象</title>
+</head>
+<body>
+    <script>
+        //生成实例对象的写法与ES5完全一样,也是使用new命令.如果方剂加上new,向函数那样调用Class会报错
+        class A{
+            constructor(a,b){
+                this.a=a;
+                this.b=b;
+            }
+        }
+        //与ES5一样,实例的属性非现实定义在其本身(即this对象)上,否则都是定义在原型(即Class)上
+        //报错
+        //var a=A(1,2);
+
+        //正确
+        var a=new A(1,2);
+        
+        //与ES5一样,实例的属性除非显示定义在本身(即this对象)上,否则都是定义在原型(即Class)上
+
+        //定义类
+        class Point{
+            constructor(x,y){
+                this.x=x;
+                this.y=y;
+            }
+            toString(){
+                return `(${this.x},${this.y})`;
+            }
+        }
+        var point=new Point(2,3);
+        console.log(point.toString());          //(2,3)
+
+        console.log(point.hasOwnProperty('x')); //true
+        console.log(point.hasOwnProperty("y")); //true
+        console.log(point.hasOwnProperty("toString"));  //true
+        console.log(point.constructor.prototype.hasOwnProperty("toString"));        //true
+
+        //上面的代码中,x和y都是实例对象point自身的属性(因为定义在this变量上),所以hasOwnProperty方法返回true,而toString是原型对象的属性(因为定义在Point类上);
+        //所以hasOwnProperty方法返回false,这些都与ES5的行为保持一致
+        //与ES5一样,类的所有实例共享一个原型对象.
+
+        var p1=new Point(2,3);
+        var p2=new Point(2,3);
+        console.log(p1.__proto__===p2.__proto__);       //true
+
+        //上面的代码中,p1和p2都是Point的实例,它们的原型都是Point.prototype,所以__proto__属性是相等的
+        //这意味着,可以通过实例的__proto__属性为"类"添加方法
+
+        
+        /****
+        *注意:_proto_并不是语言本身的特性,而是各大厂商具体实现时添加的私有属性,虽然目前很多现代浏览器的JS引擎中都提供了这个私有属性,但依然部件已在生产中使用该属性.
+             避免对环境产生依赖.生产环境中,我们可以使用Object.getPrototypeOf方法来获取实例对象的原型,然后再来为原型添加方法/属性
+        ****/
+
+        var p3=new Point(2,3);
+        var p4=new Point(4,5);
+
+        p4.__proto__.printName=function(){return "OOPs!"};
+
+        console.log(p3.printName());            //"OOPs!"
+        console.log(p4.printName());            //"OOps!"
+
+        //上面的代码在p1的原型上添加了一个printName方法,由于p1的原型就是p2的原型,因此p2也可以调用这个方法.
+        //而且,此后新建的实例p3也可以调用这个方法.
+        //这意味着,使用实例的__proto__属性改写原型必须相当谨慎,不推荐使用,因为这会改变Class的原始定义,影响到所有实例
+        
+    </script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>19.5 Class表达式</title>
+</head>
+<body>
+    <script>
+        //与函数一样,Class也可以使用表达式的形式定义.
+        const MyClass=class Me{
+            getClassName(){
+                return Me.name;
+            }
+        }    
+        //上面的代码使用表达式定义了一个类.需要注意的是,这个类的名字是MyClass而不是Me,Me只在Class的内部代码可用,指代当前类
+        let inst=new MyClass();
+        console.log(inst.getClassName());           //"Me"
+        //Me.name     //ReferenceError:Me is not defined
+
+        //上面的代码表示,Me只有在Class内部有定义
+        //如果Class内部没有用到,那么可以省略Me,也就是可以写成下面的形式
+        
+        //const MyClass=class{}
+        
+        //采用Class表达式,可以写出立即执行的Class
+        let person=new class{
+            constructor(name){
+                this.name=name;
+            }
+            sayName(){
+                console.log(this.name);
+            }
+        }("sun");
+
+        person.sayName();       //sun
+        //上面的代码中,person是一个立即执行的Class的实例
+    </script>
+</body>
+</html>
