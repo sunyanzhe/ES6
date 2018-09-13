@@ -26,7 +26,7 @@
     //上面的代码中,一旦proxy代理target.m,后者内部的this就指向proxy,而不是target
     //下面是一个例子,由于this指向的变化导致Proxy无法代理目标对象
 
-    const _name=new WeekMap();
+    const _name=new WeakMap();
     class Person{
         constructor(name){
             _name.set(this,name);
@@ -38,13 +38,33 @@
     const jane=new Person('Jane');
     console.log(jane.name);         //'Jane'
 
-    const proxy=new Proxy(jane,{});
+    const proxy1=new Proxy(jane,{});
     console.log(proxy.name)         //underfined
 
     //上面的代码中,目标对象jane的name属性实际保存在外部WeakMap对象_name上面,
     //通过this键区分.由于通过proxy.name访问时,this指向proxy,导致无法取到值,所以返回undefined
     //此外,有些原生对象的内部属性只有用过正确的this才会获取,所以Proxy也无法代理这些原生对象的属性
+    
+    const target2=new Date();
+    const handler2={};
+    const proxy2=new Proxy(target2,handler2);
 
+    // console.log(proxy.getDate());       //TypeError:this is not a Date object
+
+    //上面的代码中,getDate方法只能在Date对象实例上面获取,如果this不是Date对象实例就会报错.
+    //这是,this绑定原始对象就可以可以解决这个问题;
+    
+    const target3=new Date('2015-01-01');
+    const handler3={
+        get(target,prop){
+            if (prop === 'getDate'){
+                return target.getDate.bind(target3);
+            }
+            return Reflect.get(target3,prop);
+        }
+    };
+    const proxy3=new Proxy(target3,handler3);
+    console.log(proxy3.getDate());       //1
     </script>
 </body>
 </html>
