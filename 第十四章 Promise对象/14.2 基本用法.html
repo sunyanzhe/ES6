@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>基本用法</title>
+</head>
+<body>
+    <script>
+    //ES6规定,Promise对象是一个构造函数,用来生成Promise实例
+    //下面的代码创造了一个Promise实例
+/*    var promise=new Promise(functon(resolve,reject){
+        //...some code
+    });
+    if(异步操作成功){
+        resolve(value)
+    }else{
+        reject(error)
+    }
+*/
+    //Promise构造函数接受一个函数作为参数,该函数的两个参数分别是resolve和reject他们是两个函数,由JavaScript引擎提供,不用自己部署
+    //resolve函数的作用是,将Promise对象的状态从'未完成'变成'成功'(即从Pending变为Resolved),在异步操作成功时调用,并将异步操作的结果作为参数传递出去;
+    //reject函数的作用是,将Promise对象的状态从'未完成'到'失败'(即Pending变为Rejected),在异步操作失败时调用,并将异步操作报出的错误作为参数传递出去
+
+    //Promise实例生成后,可以用then方法分别制定Resolved状态和Rejected状态的回调函数
+/*
+    promise.then(function(value){
+        //success
+    },function(error){
+        //failure
+    })
+*/
+    //then方法可以接受两个回调函数作为参数.
+    //第一个回调函数是Promise对象的状态变为Resolved时调用,第二个函数是Promise对象的状态变为Rejected时调用.
+    //其中,第二个函数是可选的,不一定要提供.
+    //这两个函数都接受Promise对象传出的值作为参数
+
+    //下面是一个Promise对象的简单例子
+    function timeout(ms){
+        return new Promise((resolve,reject)=>{
+            setTimeout(resolve,ms,'done');
+        })
+    }
+    timeout(1000).then((value)=>{
+        console.log(value);
+    })
+
+    //上面的代码中,timeout方法返回一个Promise实例,表示一段时间以后会发生的结果.
+    //过了指定的时间(ms参数)以后,Promise实例的状态变为Resolved,就会出发then方法绑定的回调函数
+    </script>
+</body>
+</html>
