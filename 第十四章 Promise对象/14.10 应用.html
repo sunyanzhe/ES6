@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>14.10应用</title>
+</head>
+<body>
+    <script>
+    //14.10应用
+        //14.10.1加载图片
+        //可以将图片的加载写成一个Promise,一旦完成加载,Promise得状态就会发生变化
+        const preloadImage=function(path){
+            return new Promise((resolve,reject)=>{
+                let image=new Image();
+                image.onload=resolve;
+                image.onerror=reject;
+                image.src=path;
+            })
+        };
+
+        //14.10.2 Generator函数与Promise的结合
+        //使用Generator函数管理流程,遇到异步操作时通常返回一个Promise对象
+        function getFoo(){
+            return new Promise((resolve,reject)=>resolve('foo'));
+        }
+        var g=function*(){
+            try{
+                var foo=yield getFoo();
+                console.log(foo);
+            }catch(e){
+                console.log(e);
+            }
+        }
+        function run(generator){
+            var it=generator();
+            function go(result){
+                if(result.done) return result.value;
+                return result.value.then(function(value){
+                    return go(it.next(value));
+                },function(error){
+                    return go(it.throw(error));
+                })
+            }
+            go(it.next());
+        }
+        run(g);
+        //上面的Generator函数g中有一个异步操作getFoo,它返回的就是一个Promise对象.
+        //函数run用来处理这个Promise对象,并调用下一个next方法
+        
+    </script>
+</body>
+</html>
