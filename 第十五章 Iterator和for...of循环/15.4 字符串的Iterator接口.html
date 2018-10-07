@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>15.4 字符串的Iterator接口</title>
+</head>
+<body>
+    <script>
+    //字符串是一个类似数组的对象,也具有原生Iterator接口
+    var someString='hi';
+    console.log(typeof someString[Symbol.iterator]);    //function
+
+    var iterator=someString[Symbol.iterator]();
+    console.log(iterator.next());
+    console.log(iterator.next());
+    console.log(iterator.next());
+    //上面的代码中,嗲用Symbol.iterator方法返回一个遍历器对象,在其上可以调用next方法实现对于字符串的遍历
+    //可以覆盖原生的Symbol.iterator方法达到修改遍历器行为的目的
+    var str=new String('hi');
+    console.log([...str]);      //['h','i']
+    str[Symbol.iterator]=function(){
+        return {
+            next:()=>{
+                if(this._first){
+                    this._first=false;
+                    return {value:'bye',done:false};
+                }else{
+                    return {done:true};
+                }
+            },
+            _first:true
+        }
+    };
+    console.log([...str]);      //['bye']
+    console.log(str);           //'hi'
+    
+    //上面的代码中,字符串str的Symbol.iterator方法被修改了,所以扩展运算符(...)返回的值变成了bye,而字符串本身还是hi
+    </script>
+</body>
+</html>
