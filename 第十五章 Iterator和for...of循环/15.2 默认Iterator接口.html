@@ -185,7 +185,7 @@
         for (let item3 of obj3){
             console.log(item3);
         }
-
+        console.log([...obj3]);
 
         //有了遍历器接口,数据结构那就可以使用for...of循环遍历,也可以使用while循环遍历.
 /*        var $iterator=ITERABLE[Symbol.iter]();
@@ -198,7 +198,7 @@
 */
         //上面的代码中,ITERABLE代表某种可遍历的数据结构,$iterator是它的遍历器对象.
         //遍历器对象每次移动指针(next方法)都检查一下返回值的done属性,如果遍历尚未结束,就移动遍历器对象的指针到下一步(next方法),不断循环
-        
+
     </script>
 </body>
 </html>
