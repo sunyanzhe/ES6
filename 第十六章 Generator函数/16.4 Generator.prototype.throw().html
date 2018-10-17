@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>16.4 Generator.prototype.throw()</title>
+</head>
+<body>
+    <script>
+    //Generator函数返回的遍历器对象都有一个throw方法,可以在函数体外抛出错误,然后在Generator函数体内捕获
+    var g=function*(){
+        try{
+            yield;
+        }catch(e){
+            console.log('内部捕获',e);
+        }
+    };
+    var i=g();
+    i.next();
+
+    try{
+        i.throw('a');
+        i.throw('b');
+    }catch(e){
+        console.log('外部捕获',e);
+    }
+    //内部捕获 a
+    //外部捕获 b
+
+    //上面的代码中,遍历器对象i了连续抛出了两个错误.第一个错误被Generator函数体内的catch语句捕获.
+    //i第二次抛出错误,由于Generator函数内部的catch语句已经执行过了,不会在捕捉这个错误了.
+    //所以这个错误就被抛出了Generator函数体,被函数体外的catch语句捕获
+
+    //throw方法可以接受一个参数,该参数会被catch语句接收,建议抛出Error对象的实例.
+    var ii=g();
+    i.next();
+    // i.throw(new Error('出错了! '));
+    //Error: 出错了!
+    
+    /*注意
+    **不要混淆遍历器对象的throw方法和全局throw命令.
+    **上面的错误是用遍历器对象的throw方法抛出的,而不是用throw命令抛出的
+    **后者只能被函数体外catch语句捕获
+    */
+
+    var gg=function* (){
+        while(true){
+            try{
+                yield
+            }catch(e){
+                if(e!='a') throw e;
+                console.log('内部捕获',e);
+            }
+        }
+    };
+    
+    var ii2=gg();
+    i.next();
+    try{
+        throw new Error('a');
+        throw new Error('b');
+    }catch(e){
+        console.log('外部捕获',e);
+    }
+    //外部捕获[Error:a]
+
+    //上面的代码之所以只捕获了a,是因为函数体外的catch语句块不活了抛出的a错误后,就不会再执行try语句了
+    //如果Generator函数内部没有部署try...catch代码块,那么throw方法抛出的错误将被外部try...catch代码块捕获
+    
+    var g=function* (){
+        while(true){
+            yield
+            console.log('内部捕获',e);
+        }
+    };
+    var i=g();
+    i.next();
+    try{
+        i.throw('a');
+        i.throw('b');
+    }catch(e){
+        console.log('外部捕获',e);
+    }
+    //外部捕获 a
+    
+    //上面的代码中,遍历器函数g内部没有部署try...catch代码块,所以抛出得错误直接被外部catch代码块捕获
+    //如果Generator函数内部部署了try...catch代码块,那么遍历器的throw方法抛出的错误不影响下一次遍历,否则遍历直接终止
+
+    var gen=function* (){
+        yield console.log('hello');
+        yield console.log('world');
+    }
+    var g=gen();
+    g.next()
+    // g.throw();
+    //hello
+    //Uncaught undefined
+    
+    //上面的代码中,g.throw抛出错误以后,没有任何try...catch代码块可以不活这个错误,导致程序报错,中断执行
+    //throw方法被捕获以后会附带执行下一条yield表达式,既附带执行一次next方法
+
+    var gen=function*(){
+        try{
+            yield console.log('a');
+        }catch(e){}
+
+        yield console.log('b');
+        yield console.log('c');
+    }
+    var g=gen();
+    g.next();   //a
+    g.throw();  //b
+    g.next();   //c
+
+    //上面的代码中,g.thorw方法被捕获以后会自动执行一次next方法,所以打印b.
+    //另外,也可以看到,只要Generator函数内部部署了try...catch代码块,那么遍历器的throw方法抛出的错误便不会影响下一次遍历
+    //另外,throw命令与g.throw方法是无关的,两者互不影响
+    var gen=function*(){
+        yield console.log('hello');
+        yield console.log('world');
+    }
+    var g=gen();
+    g.next();
+    try{
+        throw new Error()
+    }catch(e){
+        g.next()
+    }
+    //hello 
+    //world
+
+    //上面的代码中,throw命令抛出的错误不会影响到遍历器状态,所以两次执行next方法都完成了正确的操作
+    //这种函数体内捕捉错误的机制大大方便了对错误的处理
+    //对于多个yield表达式,可以只用一个try...catch代码块来捕捉错误
+    //如果使用回调函数的写法想要捕捉多个错误,就不得不每个函数写一个错误处理语句
+    //而现在只在Generator函数内部写一次catch语句就可以了
+
+    //Generator函数体外抛出的错误可以在函数体内捕获;反过来,Generator函数体内抛出的错误也可以被函数体外的catch捕获
+    
+    //一旦Generator执行过程中抛出错误,就不会在再执行下去了.
+    //如果此后还调用next方法,将返回一个value属性等于undefined done属性等于true的对象,即JavaScript引擎认为指个Generator已经结束了
+    var g=function*(){
+        yield 1;
+        console.log('throwing an exception');
+        throw new Error('genrator broke');
+        yield 2;
+        yield 3;
+    }
+    function log(generator){
+        var v;
+        console.log('starting generator');
+        try {
+            v=generator.next();
+            console.log('第一次运行next',v);
+        } catch (error) {
+            console.log('捕捉错误',v);
+        }
+        try {
+            v=generator.next();
+            console.log('第二次运行next',v);
+        } catch (error) {
+            console.log('捕捉错误',v);
+        }
+        try {
+            v=generator.next();
+            console.log('第三次运行next',v);
+        } catch (error) {
+            console.log('捕捉错误',v);
+        }
+        console.log('caller done');
+    }
+    log(g());
+    
+    //starting generator
+    //第一次运行next {value:1,done:false}
+    //thorwing an exception 
+    //捕捉错误 {value:1,dnoe:false}
+    //第三次运行next {value:undefined,done;true}
+    // caller done
+
+    //上面的代码一共运行3次next方法,第二次运行时会抛出错误,然后第三次运行时Generator函数就已结束,不在执行下去了
+    
+    </script>
+</body>
+</html>
