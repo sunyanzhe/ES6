@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>17.2基本概念</title>
+</head>
+<body>
+    <script>
+    //17.2.1 异步
+        //所谓'异步',简单来说就是一个任务不是连续完成的,可以理解成该任务被认为分成两段,
+        //先执行第一段,然后转而执行其他任务,等做好准备后再回头执行第二段
+
+        //比如,有一个任务是读取文件进行处理,任务的第一段是向操作系统发出请求,要求读取文件.
+        //然后,程序执行其他任务,等到操作系统返回文件后再接着执行任务的第二段(处理文件).这种不连续的执行就叫做异步
+        //相应的,连续执行叫做同步,由于是连续执行,不能插入其他任务,所以操作系统从硬盘读取文件的这段期间,程序只能等待
+
+    //17.2.2 回调函数
+        //JavaScript语言对异步编程的实现就是回调函数.
+        //所谓回调函数,就是把任务的第二段单独写在一个函数里,等到重新执行这个任务时便直接调用这个函数.
+        //回调函数的英文名字叫 callback,直译过来就是'重新调用'
+        
+        //读取文件进行处理的代码如下
+        /**
+        fs.readFile('/etc/passwd', 'utf-8', function() {err, data} {
+            if (err) throw err;
+            console.log(data)
+        })
+        */
+
+        //上面的代码中,readFile函数的第三个参数就是回调函数,也就是任务的第二段.
+        //等到操作系统返回/etc/passwd文件后,回到函数才会执行
+        //一个有趣的问题是,为什么Node约定回调函数的第一个参数必须是错误对象err (如果没有错误,该参数就是null)呢?
+        //原因在于,执行分成两段,第一段执行完以后,任务所在的上下文环境就已经结束了.
+        //在这以后抛出的错误,其原来的上下文环境已经无法捕捉,因此只能当做参数被传入第二段.
+
+        //17.2.3 Promise
+        //回调函数本身并没有问题,它的问题出现在多个回调函数嵌套上.
+        //假定读取A文件之后在读取B文件,代码如下
+        
+        /*
+        fs.readFile('/etc/A', 'utf-8', function() {err, data} {
+            fs.readFile('/etc/b', 'utf-8', function() {err, data} {
+                .../
+            })
+        })
+        */
+        
+        //不难想象,如果依次读取以上两个文件,就会出现多重嵌套.
+        //代码不是纵向发展,而是横向发展,很快就会乱成一团,无法管理.
+        
+        //因为多个异步操作形成了强耦合,只要一个操作需要修改,它的上层回调函数和下层回调函数就要跟着修改
+        //这种情况被称为'回调地狱'
+
+        //Promise对象就是为了解决这个问题而被提出的.
+        //它不是新的语法功能,而是一种新写法
+        //允许将回调函数的嵌套写成练市调用.
+        //采用Promise连续读取多个文件的写法如下
+/*
+        var readFile = require('fs-readfile-promise');
+        readFile(fileA)
+        .then(data => {console.log(data.toString())})
+        .then(() => readFIle(fileB))
+        .then(data => {console.log(data.toString)})
+        .catch((err) => {console.log(err);})
+*/
+        //可以看到,Promise的写法只是回调函数的改进使用then方法以后,异步任务的两段执行更清楚了,除此以外,并无新意
+        //Promise的最大问题是代码冗余,原来的任务被Promise包装之后,无论什么操作,一眼看去都是许多then的堆积,原来的语义变得很不清楚
+    </script>
+</body>
+</html>
