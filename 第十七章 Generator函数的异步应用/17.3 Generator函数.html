@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>17.3 Generator函数</title>
+</head>
+<body>
+    <script>
+    //17.3.1 协程
+        //传统的编程语言中早有异步编程的解决方案(其实是多任务的解决方案),
+        //其中一种叫做'协程'(coroutine),意思是多个线程互相合作,完成异步任务
+        //协程有点像函数,又有点像线程.它的运行流程大致如下
+        //1.协程A开始运行
+        //2.协程A执行到一半,进入暂停状态,执行权转移到协程B中
+        //3.(一段时间后)协程B交还执行权
+        //4.协程A恢复执行
+
+        //上面的流程的协程A就是异步任务,因为它分成两段(或多段)执行
+        //举例来说
+        function* asyncJob() {
+            //...其他代码
+            var f = yield readFile(fileA);
+            //...其他代码
+        }
+        //上面代码的函数asyncJob是一个协程,它的奥妙在于其中的yield命令.
+        //它表示执行到此处时,执行权将交给其他协程,也就是说,yield命令是异步两个阶段的分界线
+        //协程遇到yield命令就会暂停,等到执行权返回,再从暂停的地方继续往后执行.
+        //它的最大的优点是,代码的写法非常想同步操作,如果去掉yield命令,几乎一模一样
+
+    //17.3.2 协程的Generator函数实现
+        //Generator函数是协程在ES6中的实现,最大特点就是可以交出函数的执行权(即暂停执行)
+        //整个Generator函数就是一个封装的异步任务,或者说是异步任务的容器.
+        //异步操作需要暂停的地方都用yield语句表明.Generator函数执行方法如下
+        function* gen(x) {
+            var y = yield x + 2;
+            return y;
+        }
+        var g = gen(1);
+        console.log(g.next());  // {value:3,done:false}
+        console.log(g.next());  // {value:undefined, done:true}
+
+        //上面的代码中,调用Generator函数会返回一个内部指针(即遍历器)g
+        //这个Generator函数不同于普通函数的另一个地方,及执行它不会返回结果,而是返回指针对象.
+        //调用指针g的next方法可以移动内部指针(即执行异步任务的第一阶段),指向第一个遇到的yield语句,上例是执行到x+2为止.
+        //换言之,next方法的作用是分阶段执行Generator函数
+        //每次调用next方法都会返回一个对象,表示当前阶段的信息(value属性和done属性).
+        //value属性时yield语句后面表达式的值;done属性是一个布尔值,表示Generator函数是否执行完毕,即是否还有下一个阶段
+    
+    //17.3.3 Generator函数的数据交换和错误处理
+        //Generator函数可以暂停执行和恢复执行,这是它能封装异步任务的根本原因.
+        //除此之外,还有两个特性使他可以作为异步编程的完整解决方案:函数体内外的数据交换和错误处理机制
+
+        //next返回的value属性是Generator函数向外输出数据;next方法还可以接受参数,向Generator函数体内输入数据
+
+        var g = gen(1);
+        console.log(g.next());  // {value:3,done:false}
+        console.log(g.next(2)); // {value:2, done:true}
+
+        //上面的代码中,第一个next方法的value属性返回表达式x+2的值3,
+        //第二个next方法带有参数2,这个参数可以传入Generator函数,作为上个阶段异步任务的返回结果.
+        //被函数体内的变量y接收.因此,这一步的value属性返回的就是2(变量y的值)
+
+        //Generator函数内还可以部署错误处理代码,捕获函数体外抛出的错误
+        
+        function* gen2(x) {
+            try {
+                var y = yield x + 2;
+            } catch (e) {
+                console.log(e);
+            }
+            return y;
+        }
+        var  g = gen2(1);
+        console.log(g.next());
+        g.throw('出错了');  //出错了
+
+        //上面代码的最后一行中,Generator函数体外使用指针对象的throw方法抛出了错误可以被函数体内的try...catch代码块捕获
+        //这意味着,出错的代码与处理错误的代码实现了时间和空间上的分离,这对于异步编程无疑是很重要的
+
+
+    //17.3.4 异步任务的封装
+        //下面看看如何使用Generator函数执行一个真实的异步任务.
+        var fetch = require('node-fetch');
+
+        function* gen3() {
+            var url = 'https://api.github.com/users/github';
+            var result = yield fetch(url);
+            console.log(result.bio);
+        }
+
+        //上面的代码中,Generator函数封装了一个异步操作, 该操作先读取一个异步操作
+        //该操作先读取了一个远程接口,然后从JSON格式的数据中解析信息.
+        //就像前面说过的,这段代码非常像同步操作,除了增加了yield命令以外
+
+        //执行这段代码的方法如下
+        var g = gen3();
+        var result = g.next();
+        result.value.then(function(data) {
+            return data.json();
+        }).then(function(data) {
+            g.next(data);
+        })
+        
+        //上面的代码中首先执行Generator函数获取遍历器对象,然后使用next方法(第二行)执行异步操作的第一个阶段
+        //由于Fetch模块返回的是一个Promise对象,因此要用then方法调用下一个next方法
+        //可以看到,虽然Generator函数将异步操作表示的很简洁,但是流程管理却不方便
+        //即何时执行第一阶段 何时执行第二阶段
+    </script>
+</body>
+</html>
