@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>18.1含义</title>
+</head>
+<body>
+    <script>
+    //ES2017标准引入了async函数,是的异步操作变得更加方便.
+    //async函数是什么?用一句话来说,他就是Generator函数的语法糖
+    //前文介绍过一个Generator函数,一次读取两个文件.
+    var fs = require('fs');
+    var readFile = function(fileName) {
+        return new Promise(function(resolve, reject) {
+            fs.readFile(fileName, function(error, data) {
+                if (error) return reject(error);
+                resolve(data);
+            });
+        });
+    };
+
+    var gen = function*() {
+        var f1 = yield readFile('/etc/fstab');
+        var f2 = yield readFile('etc/shells');
+        console.log(f1.toString());
+        console.log(f2.toString());
+    }
+
+    //将上面的代码写成async函数的形式,具体如下
+    var asyncReadFile = async function() {
+        var f1 = await readFile('/etc/fstab');
+        var f2 = await readFile('/etc/shells');
+        console.log(f1.toString());
+        console.log(f2.toString());
+    }
+
+    //通过比较就会发现,async函数即使将Generator函数的星号(*) 替换成async,将yield替换成await,仅此而已
+    //async函数对Generator函数的改进体现在以下4点
+
+    //1.内置执行器
+    //Generator函数的执行必须考执行器,所以才有了co模块,而async函数自带执行器.
+    //也就是说,async函数的执行与普通函数一模一样,只要一行
+    asyncReadFile();
+
+    //上面的代码调用了asyncReadFile函数,然后他就会自动执行,输出最终的结果.
+    //这完全不像Generator函数需要调用next方法或者使用co模块才能真正执行并得到最终结果
+
+    //2.更好的语义
+    //async和await比起星号和yield,语义更清楚
+    //async表示函数里有异步操作,await表示紧跟在后面的表达式需要等待结果
+
+    //3.更广的适用性
+    //co模块约定,yield命令行后面只能是Thunk函数或Promise对象,而async函数的await命令后面
+    //可以是Promise对象和原始类型的值(数值、字符串和布尔值、但这时等于同步操作)
+
+    //4.返回值是Promise
+    ///async函数的返回值是Promise对象,这比Generator函数返回值是Iterator对象方便了很多.
+    //可以用then方法指定下一步操作
+    //进一步说,async函数完全可看做由多个异步操作包装成的一个Promise对象,而await命令就是内部then命令的一个语法糖
+    
+    </script>
+</body>
+</html>
