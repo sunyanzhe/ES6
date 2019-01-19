@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>18.5 其他异步处理方法的比较</title>
+</head>
+<body>
+    <script>
+        //我们通过一个例子来看async函数与Promise、Generator函数作比较
+        //假定某个DOM元素上面,部署了一系列的动画,前一个动画结束,才开始后一个.
+        //如果当中有一个动画出错,就不在继续执行,而返回上一个成功动画的返回值
+        //首先是Promise写法
+        function chainAnimationPromise(elem, animations) {
+            //变量ret用来保存上一个动画的返回值
+            var ret = null;
+            //新建一个空的Promise
+            var p = Promise.resolve();
+
+            //使用then方法,添加所有动画
+            for (const anim of animations) {
+                p = p.then(function(val) {
+                    ret = val;
+                    return anim(elem);
+                });
+            }
+            //返回一个部署了错误捕捉机制的Promise
+            return p.catch(function(e) {
+                /*忽略错误,继续执行*/
+            }).then(function() {
+                return ret;
+            })
+        }
+        
+        //虽然Promise的写法相比回调函数的写法大大改进,但是一眼看上去,代码完全是Promise的API(then, catch)等等
+        //操作本身额的语义反而不容易看出来
+        
+        //接着是Generator函数的写法
+        function chainAnimationsGenerator(elem, animations) {
+            return spawn(function*() {
+                var ret = null;
+                try{
+                    for(var anim of animations) {
+                        ret = yield anim(elem);
+                    }
+                } catch(e) {
+                    /*忽略错误,继续执行*/
+                }
+                return ret;
+            })
+        }
+
+        //上面的代码使用Generaotr函数遍历了每个动画,语义比Promise写法更清晰,用户定义的操作全部都出现在spawn函数的内部.
+        //这个写法的问题在于,必须有一个任务运行器自动执行Generator函数
+        //上面的代码中的spawn函数就是自动执行器,他返回一个Promise对象,而且必须保证yield语句后面的表达式返回一个Promise
+
+        //最后是async函数的写法
+        async function chainAnimationsAsync(elem, animations) {
+            var ret = null;
+            try {
+                for(var anim of animations) {
+                    ret = await anim(elem);
+                }
+            } catch (e) {
+                
+            }
+            return ret;
+        }
+        
+    </script>
+</body>
+</html>
