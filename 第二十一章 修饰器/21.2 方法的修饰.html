@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>21.2 方法的修饰</title>
+</head>
+<body>
+    <script>
+    //修饰器不仅可以修饰类, 还可以修饰类的属性
+    class Person {
+        @readonly
+        name() {return `${this.first} ${this.last}`}
+    }
+
+    //上面的代码中,修饰器readonly用来修饰'类'的name方法
+    //此时,修饰器函数一共可以接受3个参数,
+    //第一个参数是所要修饰的目标
+    //第二个参数是所要修饰的属性名
+    //第三个参数是该属性的描述对象
+    function readonly(target, name, descriptor) {
+        // descriptor对象原来的值如下
+        // {
+        //     value: specifiedFunction,
+        //     enumerable: false,
+        //     configurable: true,
+        //     writable: true
+        // }
+        descriptor.writable = false
+        return descriptor
+    }
+
+    readonly(Person.prototype, 'name', descriptor);
+    //类似于
+    Object.defineProperty(Person.prototype, 'name', descriptor);
+    
+    //上面代码说明,修饰器(readonly)会修改属性的描述对象(descriptor),然后被修改的描述对象可以再用来定义属性
+
+    //下面是另一个例子,修改属性描述对象的enumberable属性,使得该属性不可遍历
+    class Person {
+        @nonenumerable
+        get kidCount() {return this.children.length}
+    }
+
+    function nonenumerable(target, name, descriptor) {
+        descriptor.enumerable = false;
+        return descriptor;
+    }
+
+    //下面的@log修饰器可以起到输出日志的作用
+    class Math {
+        @log
+        add(a, b) {
+            return a + b;
+        }
+    }
+    function log(target, name, descriptor) {
+        var oldValue = descriptor.value;
+
+        descriptor.value = function() {
+            console.log(`Calling "${name}" width`, arguments);
+            return oldValue.apply(null, arguments);
+        };
+
+        return descriptor;
+    }
+    const math = new Math();
+    //passed parameters should get looged now
+    math.add(2, 4);
+
+    //上面的代码中,@log修饰器的作用就是在执行原始的操作之前执行一次console.log,从而达到输出日志的目的
+    //修饰器有注释的作用
+    @testable
+    class Person {
+        @readonly
+        @nonenumerable
+        name() {return `${this.first} ${this.last}`}
+    }
+
+    //从上面的代码中,我们一眼就能看出, Person类是可测试的, 而name方法是只读且不可枚举的
+    //如果同一个方法有多个修饰器,那么该方法会先从外到内进入修饰器,然后由内向外执行
+
+    function dec(id) {
+        console.log('evaluated', id);
+        return (target, property, descriptor) => {
+            console.log('executed', id);
+        }
+    }
+
+    class Example {
+        @dec(1);
+        @dec(2);
+        method(){}
+    }
+    //evaluated 1
+    //evaluated 2
+    //executed 2
+    //executed 1
+
+    //上面的代码中, 外层修饰器@des(1)先进入, 但是内层修饰器@dec(2)先执行
+    //除了注释, 修饰器还能用来进行类型检测. 所以,对于类来说,这项功能相当有用, 它将是JacaScript代码静态分析的重要工具
+    
+    </script>
+</body>
+</html>
