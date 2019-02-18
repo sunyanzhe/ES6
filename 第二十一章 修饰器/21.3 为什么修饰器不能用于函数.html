@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>21.3 为什么修饰器不能用于函数</title>
+</head>
+<body>
+    <script>
+    //修饰器只能用于类和类的方法, 不能用于函数, 因为存在函数提升
+    var counter = 0;
+    var add = function() {
+        counter++;
+    }
+
+    @add
+    function foo(){}
+
+    //上面代码的本意是使执行后的counter等于1, 但实际上结果是counter等于0.
+    //因为函数提升,使得实际执行的代码如下
+    @add
+    function foo() {}
+
+    var counter;
+    var add;
+
+    counter = 0;
+    
+    add = function () {
+        counter++;
+    }
+
+    //下面是另一个例子
+    let readOnly = require('some-descorator');
+    @readOnly
+    function foo() {}
+
+    //这个代码也有问题,因为实际执行的代码如下
+
+    var readOnly;
+    @readOnly
+    function foo() {}
+
+    readOnly = require('some-descorator')
+
+    //总之,由于存在函数提升,修饰器不能用于函数
+    //类是不会提升的,所以就没有这方面的问题
+    //另一方面,如果一定要修饰函数,可以采用高阶函数的形式直接执行
+    function doSomething(name) {
+        console.log('hello, ' + name);
+    }
+    function loggingDecorator(wrapped) {
+        return function() {
+            console.log('Starting');
+            const result = wrapped.apply(this, arguments);
+            console.log('Finished');
+            return result;
+        }
+    }
+
+    const wrapped = logingDecorator(doSomething);
+    
+    </script>
+</body>
+</html>
