@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>22.2 严格模式</title>
+</head>
+<body>
+    <script>
+    //ES6的模块自动采用严格模式, 不管有没有在模块头部加上'use strict'
+    //严格模式主要有以下限制
+    //1.变量必须声明后在使用
+    //2.函数的参数不能有同名属性,否则报错
+    //3.不能使用with语句
+    //4.不能对只读属性赋值,否则报错
+    //5.不能使用0表示八进制数,否则报错
+    //6.不能删除不可删除的属性,否则报错
+    //7.不能删除变量 delete prop, 会报错,只能删除属性delete global[prop]
+    //8.eval不会在他的外层作用域引入变量
+    //9.eval和arguments不能被重新赋值.
+    //10.arguments不会自动反应函数参数的变化
+    //11.不能使用arguments.callee
+    //12.不能使用arguments.caller
+    //13.禁止this指向全局对象
+    //14.不能使用fn.caller 和 fn.arguments获取函数调用的堆栈
+    //15.添加了保留字(protected static interface)
+
+    //上面这些限制,模块都必须遵守.
+    //由于ES5引入严格模式,不属于ES6
+
+    //尤其注意this的限制,在ES6的模块中,顶层的this指向undefined,即不应该在顶层代码中使用this
+    
+    </script>
+</body>
+</html>
