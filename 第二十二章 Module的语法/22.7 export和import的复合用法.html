@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>22.7 export和import复合用法</title>
+</head>
+<body>
+    <script>
+    //如果在一个模块之中先输入后输出同一个模块,import语句可以与export语句写在一起
+    //export {foo, bar} from './my_module'
+    
+    //等同于
+    //import {foo, bar} from './my_module'
+    //export {foo, bar}
+
+    //上面的代码中,export和import语句可以结合在一起写成一行
+    //模块的接口改名和整体输出也可以采用这种方法
+    //接口改名
+    // exprot {foo as myFoo} from 'my_module'
+
+    //整体输出
+    // export * from 'my_module'
+
+    //默认接口的写法如下
+    export { default } from 'foo'
+
+    //具名接口改为默认接口的写法如下
+    export {es6 as default} from './someModule';
+
+    //等同于
+    import { es6 } from './someModule'
+    export default es6
+
+    //同样地,默认接口也可以具名接口
+    export {default as es6} from './someModule'
+
+    //下面3种import语句没有对应的复合写法
+    import * as someIdentifier from 'someModule'
+    import someIdentifier from 'someModule'
+    import someIdentifier, {namedIdentifier} from 'someModule'
+
+    //为了做到形式对称,有一个提案提出补上这3中写法.
+    
+    export * as someIdentifier from 'someModule'
+    export someIdentifier from 'someModule'
+    export someIdentifier, {namedIdentifier} from 'someModule'
+    </script>
+</body>
+</html>
