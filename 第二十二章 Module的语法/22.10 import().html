@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>import()</title>
+</head>
+<body>
+    <script>
+    //前面介绍过,import命令会被JavaScript引擎静态分析,先于模块内的其他模块执行(称为'链接'更合适)
+    //所以,下面的代码会报错
+
+    //报错
+    // if (x === 2) {
+        // import MyModual from './myModual'
+    // }
+    
+    //上面的代码中,引擎处理import语句是在编译时,这是不会分析或执行if语句
+    //所以import语句放在if代码块中毫无意义,因此会报句法错误,而不是执行时错误
+    //也就是说,import和export命令只能在模块的顶层,不能再代码块之中(比如, if代码块之中或在函数之中)
+
+    //这样的设计固然有利于编辑器提高效率,但也导致无法再运行时加载模块
+    //在语法上,条件加载不可能实现
+    //如果import命令要取代Node的require方法,这就形成了一个障碍
+    //因为require是运行时加载模块,import命令无法取代require的动态加载功能
+    const path = './' + fileName;
+    const myModual = require(path);
+
+    //上面的语句是动态加载,require到底加载哪一个模块只有运行时才能知道
+    //import语句做不到这一点
+
+    //因此,有一个提案建议引入import函数完成动态记载
+    // import(specifiers)
+
+    //上面的代码中,import()函数的参数specifiers指定所要加载的模块的位置
+    //import命令能够接受什么参数,import()函数就能接受什么参数,两者的区别主要是,后者为动态加载
+
+    //import()返回一个Promise对象,下面是一个例子
+    const main = document.querySelector('main');
+    import(`./seection-modules/${someVariable}.js`)
+        .then(module => {
+            module.loadPageInto(main);
+        })
+        .catch(err => {
+            main.textContent = err.message
+        })
+
+    //import()函数可以用在任何地方,不仅仅是模块,非模块的脚本也可以使用.
+    //他是运行时执行,也就是说,运行到这一句时便会加载指定的模块,
+    //另外,import()函数与所加载的模块没有静态链接的关系,这一点与import语句不相同
+
+    //import()类似于Node的require方法,区别主要是,前者是异步加载,后者是同步加载
+
+    //22.10.2 适用场合
+        //下面是import()的一些适用场合
+    
+    //按需加载
+        // import()可以在需要的时候再加载某个模块
+        button.addEvenListener('click', event => {
+            import('./dialogBox.js')
+                .then(dialogBox => {
+                    dialogBox.open();
+                })
+                .catch(error => {
+                    // Error handling
+                })
+        }, false);
+
+        //上面的代码中, import()方法放在click事件的监听函数中,只有用户点击按钮才会加载这个模块
+    
+    //条件加载
+        //import()可以放在if代码块中,根据不同的情况加载不同的模块
+        if (condition) {
+            import('moduleA').then(...);
+        } else {
+            import('moduleB').then(...);
+        }
+
+        //上面的代码中,满足条件时就加载模块A,否则加载B
+
+    //动态的模块路径
+        // import()允许模块路径动态生成
+        import(f()).then()
+        //上面代码根据函数f的返回结果加载不同的模块
+
+    //22.10.3 注意点
+        //import()加载模块成功后,这个模块会作为一个对象当做then方法的参数
+        //因此可以使用对象解构赋值的语法,获取输出接口
+        import('./myModule.js')
+            .then(({export1, export2}) => {
+                //...
+            })
+        
+        //上面的代码中,export1和export2都是Module.js的输出接口,可以解构获得
+        //如果模块有default接口,可以用参数直接获得
+
+        import('./myModule.js')
+            .then(myModule => {
+                console.log(myModule.default)
+            })
+        import('./myModule.js')
+            .then(({default: theDefault}) => {
+                console.log(theDefault);
+            })
+        
+        //如果想同事加载多个模块,可以采用下面的写法
+        Promise.all([
+            import('./module1.js'),
+            import('./module2.js'),
+            import('./module3.js')
+        ])
+        .then(([module1, module2, module3]) => {
+            //..
+        })
+
+        //import()也可以用在async函数中
+        async function main() {
+            const myModule = await import('./myModule.js');
+            const {export1, export2} = await import('./myModule.js');
+            const [module1, module2, module3] = 
+                await Promise.all(
+                    import('./module1.js'),
+                    import('./module2.js'),
+                    import('./module3.js')
+                )
+        }
+        main();
+    </script>
+</body>
+</html>
