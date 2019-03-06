@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>26.1 ArrayBuffer对象</title>
+</head>
+<body>
+    <script>
+    //26.1.1 概述
+    //ArrayBuffer对象代表储存二进制数据的一段内存,他不能直接读写,只能通过视图读写,视图的作用是以指定格式解读二进制数据
+    //ArrayBuffer也是一个构造函数,可分配一段可以存放数据的连续内存区域
+    var buf = new ArrayBuffer(32);
+    
+    //上面的代码生成了一段32字节的内存区域,每个字节的值默认都是0.
+    //可以看到.ArrayBuffer构造函数的参数是所需要的内存大小(单位为字节)
+
+    //为了读写这段内存,需要为他指定视图.创建DataView视图,需要提供ArrayBuffer对象实例作为参数
+    var dataView = new DataView(buf);
+    console.log(dataView.getUint8(0));      //0
+
+    //上面代码对一段32字节的内存建立DataView视图,然后以不带符号的8位整数形式读取第一个元素,结果得到0,因为原始内存的ArrayBuffer对象默认所有位都是0
+    //TypedArray视图与DataView视图的一个区别是,它不是一个构造函数,而是一组构造函数,代表不同的数据格式.
+    
+    var buffer = new ArrayBuffer(12);
+    var x1 = new Int32Array(buffer);
+    x1[0] = 1;
+    var x2 = new Uint8Array(buffer);
+    x2[0] = 2;
+    console.log(x1[0]);     //2
+    
+    //上面的代码对同一段内存分别建立了两种视图:32位带符号整数(Int32Array构造函数)和8位不带符号整数(Uint8Array构造函数)
+    //由于两个视图对应的是同一段内存,因此一个视图修改底层内存会影响到另一个视图
+
+    //TypedArray视图的构造函数除了接受ArrayBuffer实例作为参数,还可以接受普通数组作为参数,直接分配内存生成底层的ArrayBuffer实例,同时完成对这段内存的赋值
+    var typedArray = new Uint8Array([0, 1, 2]);
+    console.log(typedArray.length);     //3
+    typedArray[0] = 5;
+    console.log(typedArray);         //5,1,2
+
+    //上面的代码使用TypedArray视图的Uint8Array构造函数新建一个不带符号的8位整数视图.
+    //可以看到,Uint8Array直接使用普通数组作为参数,对底层内存的赋值同时完成
+
+    //26.1.2 ArrayBuffer.prototype.byteLength
+    //ArrayBuffer实例的byteLength属性返回所分配的内存区域的字节长度
+    console.log(buf.byteLength);        //32
+
+    //如果要分配的内存区域很大,有可能分配失败(因为没有那么多的连续空余内存),所以有必要检查是否分配成功
+    /*
+    if (buffer.byteLength === n) {success} else {fail}
+    */
+
+
+    //26.1.3 ArrayBuffer.prototype.slice()
+    //ArrayBuffer实例有一个slice方法,允许将内存区域的一部分复制生成一个新的ArrayBuffer对象
+    var buffer = new ArrayBuffer(8);
+    var newBuffer = buffer.slice(0, 3);
+
+    //上面的代码复制buffer对象的前3个字节(从0开始到第三个字节前结束).生成一个新的ArrayBuffer对象.
+    //slice方法其实包含两步,第一步先分配一段新内存,第二部将原来那个ArrayBuffer对象复制过去
+
+    //slice方法接受两个参数,第一个参数表示复制开始的字节序号(含该字节),第二个字参数表示复制截止的字节序号(不含该字节)
+    //如果省略第二个字节,则默认到原ArrayBuffer对象的结尾
+
+    //除了slice方法,ArrayBuffer对象不提供任何直接读写内存的方法,只允许在其上建立视图,通过视图读写
+
+    //26.1.4 ArrayBuffer.isView()
+
+    //ArrayBuffer有一个静态方法isView,返回一个布尔值,表示参数是否为ArrayBuffer的视图实例
+    //这个方法相当于判断是否为TypedArray实例或DataView实例
+    var buffer = new ArrayBuffer(8);
+    console.log(ArrayBuffer.isView(buffer)); //false
+
+    var v = new Int32Array(buffer);
+    console.log(ArrayBuffer.isView(v)); //true
+    
+    </script>
+</body>
+</html>
